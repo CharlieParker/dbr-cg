@@ -38,7 +38,7 @@ const server = http.createServer((q, r) => {
     for (let d = 8; d < 19; d++) { w *= 1 + Math.sin(d) * .15 + .08; history.push({ d, worth: w, port: w * .6, earned: 1000 * d, took: 900 * d, flip: 3000 * Math.sin(d), pos: { index: 200 * d, moo: -3000 * Math.cos(d) }, px: { index: 100 + d, moo: 100 + 12 * Math.sin(d), hay: 100 } }); }
     Object.assign(s, { stage: 3, paperFound: true, phase: 'night', issues: 1, money: 130000, lifetime: 150000, day: 19, history,
       report: { day: 18, furrows: 90, earned: 21000, took: 26000 }, flipsLeft: 1,
-      helpers: { chicken: 14, sheep: 2, goat: 6, tractor: 3 }, rebellions: ['raise', 'union', 'strike', 'lawyer'], lessons: ['flip2', 'index', 'moo', 'lev2'] });
+      helpers: { chicken: 15, sheep: 2, goat: 6, tractor: 3 }, rebellions: ['raise', 'union', 'strike', 'lawyer'], lessons: ['flip2', 'index', 'moo', 'lev2'] });
     s.beats.push('paper'); localStorage.setItem('bull-run-escape', JSON.stringify(s)); Storage.prototype.setItem = () => {};
   });
   await p.reload(); await p.waitForTimeout(400);
@@ -59,6 +59,15 @@ const server = http.createServer((q, r) => {
   await p.click('#cta'); await p.waitForTimeout(500);
   await p.click('#sheet-close'); await p.waitForTimeout(250);
   await p.screenshot({ path: `${shots}/h-day.png` });
+  // The money must not move anything else in the status bar.
+  const place = () => p.evaluate(() => ['spark', 'cut-chip'].map((id) => document.getElementById(id).getBoundingClientRect().left));
+  const before = await place();
+  await p.evaluate(() => { document.getElementById('money').textContent = '£1.23M'; });
+  const steady = JSON.stringify(before) === JSON.stringify(await place());
+  await p.waitForTimeout(150);
+  await p.click('#tab-farm'); await p.waitForTimeout(200);
+  await p.screenshot({ path: `${shots}/i-upgrades.png` });
+  console.log({ steady });
   console.log({ day2, overflowX: await p.evaluate(() => document.documentElement.scrollWidth > innerWidth), errors });
   await b.close(); server.close();
 })().catch(e => { console.error(e); server.close(); process.exit(1); });

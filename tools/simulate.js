@@ -15,6 +15,10 @@ function shop() {
   if (r && E.canSeeRebellion(s, r) && s.money >= r.cost) { E.buyRebellion(s, r.id); log(`${r.name}: cut ${E.cut(s) * 100}%`); }
   const income = E.helperWork(s) * E.payPerWork(s) + tapsPerSecond * E.tapWork(s) * E.payPerWork(s);
   if (r && E.canSeeRebellion(s, r) && r.cost < s.money + income * 20) return;
+  for (const h of E.HELPERS) {
+    const u = E.nextUpgrade(s, h.id);
+    if (u && s.money >= u.cost && E.buyUpgrade(s, h.id)) log(`upgrade: ${u.name}`);
+  }
   const options = E.HELPERS.map((h) => ({ cost: E.costOfHelper(s, h), gain: h.work, buy: () => E.buyHelper(s, h.id) }));
   options.push({ cost: E.costOfPlough(s), gain: tapsPerSecond * E.PLOUGH.work, buy: () => E.buyPlough(s) });
   // Keeps 60% of its cash back from the shop once there are barn costs to save for.

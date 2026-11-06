@@ -20,18 +20,20 @@
   }
 
   /* Numbers */
+  // Trailing zeros only go after a decimal point, so 100 stays 100.
   function short(n, digits) {
-    return n.toFixed(digits).replace(/\.?0+$/, "");
+    const text = n.toFixed(digits);
+    return digits ? text.replace(/\.?0+$/, "") : text;
   }
   function money(n) {
     const sign = n < 0 ? "-" : "";
     n = Math.abs(n);
-    if (n < 1000) return sign + "£" + (n < 100 ? n.toFixed(2) : n.toFixed(0));
-    if (n < 1e6) return sign + "£" + short(n / 1e3, n < 1e4 ? 2 : n < 1e5 ? 1 : 0) + "k";
-    if (n < 1e9) return sign + "£" + short(n / 1e6, 2) + "M";
+    if (n < 999.5) return sign + "£" + (n < 100 ? n.toFixed(2) : n.toFixed(0));
+    if (n < 999500) return sign + "£" + short(n / 1e3, n < 1e4 ? 2 : n < 1e5 ? 1 : 0) + "k";
+    if (n < 999.5e6) return sign + "£" + short(n / 1e6, 2) + "M";
     return sign + "£" + short(n / 1e9, 2) + "B";
   }
-  const count = (n) => (n < 1000 ? String(n) : n < 1e6 ? short(n / 1e3, 1) + "k" : short(n / 1e6, 2) + "M");
+  const count = (n) => (n < 1000 ? String(n) : n < 999950 ? short(n / 1e3, 1) + "k" : short(n / 1e6, 2) + "M");
   const perSecond = (n) => money(n) + "/s";
   const percent = (n) => (n >= 0 ? "+" : "") + (n * 100).toFixed(1) + "%";
 
@@ -378,10 +380,21 @@
       cost: E.costOfPlough(s), buy: () => E.buyPlough(s),
     });
     for (const h of E.HELPERS) {
-      if (!revealed(h.id, h.cost)) continue;
-      const each = h.work * E.payPerWork(s);
+      const u = E.nextUpgrade(s, h.id);
+      if (!u) continue;
+      const owned = s.helpers[h.id] || 0;
       rows.push({
-        key: h.id, name: h.name, count: s.helpers[h.id] || 0, note: h.note,
+        key: "upgrade-" + h.id, kind: "upgrade", name: `${EMOJI[h.id]} ${u.name}`, note: u.note,
+        gain: owned < u.own ? `Needs ${u.own} owned. You have ${owned}` : `Doubles ${h.name}: ${perSecond(E.helperIncome(s, h))} becomes ${perSecond(E.helperIncome(s, h) * 2)}`,
+        cost: u.cost, locked: owned < u.own,
+        buy: () => { if (E.buyUpgrade(s, h.id)) flashPose("cheer", 1200); },
+      });
+    }
+    for (const h of E.HELPERS) {
+      if (!revealed(h.id, h.cost)) continue;
+      const each = E.workOf(s, h) * E.payPerWork(s);
+      rows.push({
+        key: h.id, name: `${EMOJI[h.id]} ${h.name}`, count: s.helpers[h.id] || 0, note: h.note,
         gain: `+${perSecond(each)} each. Now ${perSecond(E.helperIncome(s, h))}`,
         cost: E.costOfHelper(s, h), buy: () => E.buyHelper(s, h.id),
       });
@@ -509,6 +522,7 @@
     rows.push({ key: "h-life", heading: "Your career" });
     rows.push({ key: "stat-day", stat: true, name: "Days worked", value: String(s.day) });
     rows.push({ key: "stat-furrows", stat: true, name: "Furrows ploughed", value: count(s.furrows) });
+    rows.push({ key: "stat-upgrades", stat: true, name: "Helper upgrades", value: String(Object.values(s.tiers).reduce((a, b) => a + b, 0)) });
     rows.push({ key: "stat-man", stat: true, name: "The Man has taken", value: money(s.manTook) });
     rows.push({ key: "stat-worth", stat: true, name: "Net worth", value: money(E.netWorth(s)) });
     if (s.bearMet) {
@@ -596,7 +610,7 @@
     el.querySelector(".gain").hidden = !row.gain;
     const price = el.querySelector(".price");
     price.textContent = row.label || (row.cost ? money(row.cost) : "");
-    if (!row.info) el.disabled = s.money < (row.cost || 0);
+    if (!row.info) el.disabled = !!row.locked || s.money < (row.cost || 0);
     if (row.actions) {
       [...el.querySelector(".actions").children].forEach((b, i) => {
         const a = row.actions[i];

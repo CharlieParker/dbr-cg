@@ -55,12 +55,12 @@ button { font: inherit; color: inherit; }
 
 /* Status */
 #status { display: grid; gap: 6px; padding-block: 8px; padding-left: var(--left); padding-right: var(--right); }
-#status-top { display: flex; align-items: center; gap: 10px; }
+#status-top { display: grid; grid-template-columns: 128px minmax(0, 1fr) auto; align-items: center; gap: 10px; }
 #money { font-size: 30px; font-weight: 800; line-height: 1; letter-spacing: -.01em; }
 #money.doubled { color: var(--gold); }
-#worth { display: flex; align-items: center; gap: 6px; min-width: 0; font-size: 13px; color: var(--muted); }
-#spark { width: 52px; height: 18px; flex: none; }
-#cut-chip { margin-left: auto; flex: none; padding: 4px 10px; border-radius: 999px; background: var(--card-2); font-size: 15px; }
+#worth { display: flex; align-items: center; gap: 6px; min-width: 0; overflow: hidden; font-size: 13px; color: var(--muted); white-space: nowrap; }
+#spark { order: -1; width: 40px; height: 18px; flex: none; }
+#cut-chip { grid-column: 3; padding: 4px 10px; border-radius: 999px; background: var(--card-2); font-size: 15px; }
 #cut-chip b { font-weight: 800; color: var(--red); }
 #activity { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 3px 8px; font-size: 14px; color: var(--muted); }
 #activity .bar { grid-column: 1 / -1; }
@@ -217,6 +217,7 @@ button { font: inherit; color: inherit; }
 button.item { cursor: pointer; }
 .item.rebel { box-shadow: inset 3px 0 0 var(--red); }
 .item.news { box-shadow: inset 3px 0 0 var(--paper); }
+.item.upgrade { box-shadow: inset 3px 0 0 var(--gold); }
 .item.bear { box-shadow: inset 3px 0 0 #8498B8; }
 .item.tip { background: var(--card-2); }
 .item b { display: block; font-size: 16px; font-weight: 600; line-height: 1.2; }

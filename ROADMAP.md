@@ -30,6 +30,12 @@ This is the shared list of what the game is becoming. Update it as decisions cha
 - [x] Add a clear "Tonight's paper" market tip card
 - [x] Make the clock-off prompt stronger
 
+## Build 3.1: fixes and upgrades
+
+- [x] Fix number suffixes, such as £100k showing as £1k
+- [x] Keep the status bar steady as numbers change
+- [x] Add upgrades that double each helper's output
+
 ## Build 4: crops and products
 
 - [ ] Choose tomorrow's crop in the barn
@@ -39,6 +45,7 @@ This is the shared list of what the game is becoming. Update it as decisions cha
 - [ ] Sell crops now or hold them for a better price
 - [ ] Unlock overnight processing, such as 🍇 into 🍷 and 🍎🍋🍊 into 🧃
 - [ ] Give every crop and product its own moving price and graph
+- [ ] Add 🐖 pigs and 🐄 cows as new helpers, with their own upgrades
 - [ ] Add animal goods, such as 🐑 wool and 🐖 sausages
 - [ ] Add yield graphs
 
