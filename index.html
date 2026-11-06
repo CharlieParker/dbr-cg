@@ -7,98 +7,84 @@
 <title>Bull Run Escape</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Old+Standard+TT:wght@400;700&family=Patrick+Hand&family=UnifrakturCook:wght@700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Old+Standard+TT:wght@400;700&family=Outfit:wght@400;600;800&family=UnifrakturCook:wght@700&display=swap">
 <link rel="stylesheet" href="style.css">
 <!-- page-head-end -->
 </head>
 <body>
 <!-- page-body-start -->
 <main id="app" class="stage-1">
+  <header id="status">
+    <div id="status-top" hidden>
+      <strong id="money">£0.00</strong>
+      <div id="worth" hidden>
+        <span id="worth-text"></span>
+        <svg id="spark" viewBox="0 0 80 24" aria-hidden="true"><path fill="none" stroke="#49D17D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <span id="cut-chip">👨‍🌾 <b id="cut">90%</b></span>
+    </div>
+    <div id="activity">
+      <span id="activity-text">🌿 Grazing</span>
+      <span id="activity-side"></span>
+      <div class="bar"><span id="activity-fill"></span></div>
+    </div>
+  </header>
   <section id="scene" aria-label="The field. Tap to work.">
     <div id="sun" aria-hidden="true"></div>
     <svg class="backdrop" viewBox="0 0 400 300" preserveAspectRatio="none" aria-hidden="true">
-      <path d="M-10 92 C70 42 150 48 226 78 C290 52 350 54 420 84 V300 H-10Z" fill="#A7D65C" stroke="#1B0F08" stroke-width="4" vector-effect="non-scaling-stroke"/>
-      <g stroke="#1B0F08" stroke-width="4" stroke-linejoin="round" vector-effect="non-scaling-stroke">
-        <path id="plot-chicken-land" class="land" d="M-10 96 L104 66 L128 148 L-10 182Z"/>
-        <path id="plot-sheep-land" class="land" d="M104 66 L232 76 L252 158 L128 148Z"/>
-        <path id="plot-goat-land" class="land" d="M-10 182 L128 148 L142 216 L-10 232Z"/>
-        <path id="plot-tractor-land" class="land" d="M128 148 L252 158 L262 226 L142 216Z"/>
+      <path d="M-10 96 C70 56 150 58 226 80 C290 60 350 62 420 86 V300 H-10Z" fill="#9FD265"/>
+      <g stroke="#7FB84C" stroke-width="2" vector-effect="non-scaling-stroke">
+        <path id="plot-chicken-land" class="land" d="M150 92 L270 74 L276 138 L150 150Z"/>
+        <path id="plot-sheep-land" class="land" d="M270 74 L410 84 L410 146 L276 138Z"/>
+        <path id="plot-goat-land" class="land" d="M150 150 L276 138 L282 205 L150 214Z"/>
+        <path id="plot-tractor-land" class="land" d="M276 138 L410 146 L410 212 L282 205Z"/>
       </g>
     </svg>
-    <svg id="farmhouse" viewBox="0 0 120 110" aria-hidden="true">
-      <g stroke="#1B0F08" stroke-width="5" stroke-linejoin="round">
-        <path d="M10 106 V48 L60 8 L110 48 V106Z" fill="#D4321C"/>
-        <path d="M38 106 V64 H82 V106Z" fill="#F7F3E8"/>
-        <path d="M38 64 L82 106 M82 64 L38 106" fill="none"/>
-      </g>
-    </svg>
+    <div id="farmhouse" aria-hidden="true">🏠</div>
     <div id="ground"></div>
     <div id="tufts" aria-hidden="true"></div>
-    <div id="helpers" aria-hidden="true"></div>
     <div id="plots"></div>
     <svg id="plough" viewBox="0 0 120 70" aria-hidden="true">
-      <path d="M0 22 H42" stroke="#1B0F08" stroke-width="5" fill="none"/>
-      <path d="M38 12 L100 12 L112 4" stroke="#1B0F08" stroke-width="10" fill="none" stroke-linecap="round"/>
-      <path d="M38 12 L100 12 L112 4" stroke="#B9783F" stroke-width="5" fill="none" stroke-linecap="round"/>
-      <path d="M58 14 L50 56 L84 62 L74 14Z" fill="#9AA6AE" stroke="#1B0F08" stroke-width="4" stroke-linejoin="round"/>
+      <path d="M0 22 H42" stroke="#3A2A1C" stroke-width="5" fill="none"/>
+      <path d="M38 12 L100 12 L112 4" stroke="#B9783F" stroke-width="7" fill="none" stroke-linecap="round"/>
+      <path d="M58 14 L50 56 L84 62 L74 14Z" fill="#AEB8C2"/>
     </svg>
     <img id="bull" src="assets/bull-side.png" alt="The bull" draggable="false">
-    <div id="quota" hidden>
-      <div class="bar"><span id="quota-fill"></span></div>
-      <span id="quota-label"></span>
-    </div>
-    <button id="clover" type="button" hidden aria-label="Pick the lucky clover">
-      <svg viewBox="0 0 60 60" aria-hidden="true"><g fill="#FFC72C" stroke="#1B0F08" stroke-width="4"><circle cx="30" cy="16" r="12"/><circle cx="16" cy="30" r="12"/><circle cx="44" cy="30" r="12"/><circle cx="30" cy="42" r="12"/></g><circle cx="30" cy="29" r="5" fill="#FFF3B0"/></svg>
-    </button>
-    <button id="paper" type="button" hidden aria-label="Pick up the newspaper">
-      <svg viewBox="0 0 80 60" aria-hidden="true"><path d="M6 8 L70 3 L74 50 L10 56Z" fill="#F7F3E8" stroke="#1B0F08" stroke-width="4" stroke-linejoin="round"/><path d="M16 15 L62 12 M18 26 L38 25 M18 34 L38 33 M19 42 L39 41 M46 24 L64 23 L65 42 L47 43Z" stroke="#1B0F08" stroke-width="3" fill="none"/></svg>
-    </button>
+    <button id="clover" type="button" hidden aria-label="Pick the lucky clover">🍀</button>
+    <button id="paper" type="button" hidden aria-label="Pick up the newspaper">📰</button>
     <div id="barn" hidden>
-      <div id="lantern" aria-hidden="true"></div>
+      <div id="lantern" aria-hidden="true">🏮</div>
       <div id="hay" aria-hidden="true"></div>
       <img id="barn-bull" src="assets/bull-read.png" alt="The bull, in the barn" draggable="false">
       <button id="door" type="button" hidden aria-label="Open the back door"><span></span></button>
-      <svg id="bear" hidden viewBox="0 0 170 230" role="img" aria-label="Grizz, a bear in a flat cap and dark glasses">
-        <g stroke="#1B0F08" stroke-width="5" stroke-linejoin="round">
-          <path d="M12 228 C14 170 44 142 85 142 C126 142 156 170 158 228Z" fill="#A9834E"/>
-          <path d="M60 146 L85 196 L110 146Z" fill="#F7F3E8"/>
-          <path d="M79 158 L91 158 L96 198 L85 212 L74 198Z" fill="#D4321C"/>
-          <path d="M40 158 L66 142 L85 196 L66 214Z" fill="#8C6A3A"/>
-          <path d="M130 158 L104 142 L85 196 L104 214Z" fill="#8C6A3A"/>
-          <circle cx="36" cy="42" r="16" fill="#66778E"/>
-          <circle cx="134" cy="42" r="16" fill="#66778E"/>
-          <path d="M28 84 C28 42 52 26 85 26 C118 26 142 42 142 84 C142 128 118 152 85 152 C52 152 28 128 28 84Z" fill="#7D8FA8"/>
-          <path d="M52 112 C52 94 68 88 85 88 C102 88 118 94 118 112 C118 132 102 142 85 142 C68 142 52 132 52 112Z" fill="#D8DEE6"/>
-          <path d="M72 96 H98 L85 110Z" fill="#1B0F08"/>
-          <path d="M66 124 C78 132 96 132 110 120" fill="none"/>
-          <path d="M92 127 H104 V136 H92Z" fill="#FFC72C" stroke-width="3"/>
-          <path d="M34 62 H78 C80 84 74 92 56 92 C40 92 34 80 34 62Z" fill="#1B0F08"/>
-          <path d="M92 62 H136 C136 80 130 92 114 92 C96 92 90 84 92 62Z" fill="#1B0F08"/>
-          <path d="M76 66 H94" fill="none"/>
-          <path d="M26 46 C30 14 64 4 92 6 C120 8 146 22 146 46 C110 34 60 34 26 46Z" fill="#3D4A36"/>
-          <path d="M18 50 C50 32 80 34 112 44 C84 54 44 58 18 50Z" fill="#2C3627"/>
+      <svg id="bear" hidden data-mood="neutral" viewBox="0 0 170 190" role="img" aria-label="Grizz, a blue bear in a flat cap">
+        <path d="M14 192 C18 150 46 134 85 134 C124 134 152 150 156 192Z" fill="#C49A5A"/>
+        <path d="M66 136 L85 170 L104 136Z" fill="#F4F1EA"/>
+        <circle cx="34" cy="40" r="17" fill="#6F83A3"/>
+        <circle cx="136" cy="40" r="17" fill="#6F83A3"/>
+        <rect x="24" y="26" width="122" height="122" rx="56" fill="#8498B8"/>
+        <ellipse cx="85" cy="118" rx="36" ry="26" fill="#DDE4EE"/>
+        <path d="M74 103 H96 L85 115Z" fill="#232840"/>
+        <g class="eyes">
+          <circle cx="60" cy="80" r="16" fill="#fff"/><circle cx="110" cy="80" r="16" fill="#fff"/>
+          <circle class="pupil" cx="60" cy="81" r="7" fill="#232840"/><circle class="pupil" cx="110" cy="81" r="7" fill="#232840"/>
+          <rect class="lid" x="42" y="62" width="86" height="36" fill="#8498B8"/>
         </g>
-        <path d="M44 68 L58 68 L50 84" fill="none" stroke="#F7F3E8" stroke-width="4"/>
+        <g fill="none" stroke="#232840" stroke-width="6" stroke-linecap="round">
+          <path class="mood neutral smug lean" d="M46 62 L74 66 M96 66 L124 62"/>
+          <path class="mood gloat" d="M44 56 L74 70 M96 70 L126 56"/>
+          <path class="mood shock" d="M46 54 Q60 44 74 54 M96 54 Q110 44 124 54"/>
+          <path class="mood neutral" d="M72 128 Q88 134 102 124"/>
+          <path class="mood smug" d="M68 124 Q88 140 106 122"/>
+        </g>
+        <ellipse class="mood lean" cx="85" cy="130" rx="6" ry="4" fill="#232840"/>
+        <path class="mood gloat" d="M62 122 Q85 128 108 122 Q104 144 85 144 Q66 144 62 122Z" fill="#232840"/>
+        <rect class="mood gloat" x="90" y="124" width="10" height="9" fill="#FFC83D"/>
+        <ellipse class="mood shock" cx="85" cy="133" rx="10" ry="12" fill="#232840"/>
+        <path d="M22 44 C28 12 62 4 90 6 C118 8 146 20 148 44 C110 32 60 32 22 44Z" fill="#3F4F42"/>
+        <path d="M12 48 C44 30 76 32 108 42 C80 52 40 56 12 48Z" fill="#2E3A30"/>
       </svg>
     </div>
-    <header id="hud">
-      <div id="belly-wrap">
-        <span id="belly-label">Belly</span>
-        <div id="belly" role="progressbar" aria-label="Belly" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span id="belly-fill"></span></div>
-      </div>
-      <div id="purse" hidden>
-        <strong id="money">£0.00</strong>
-        <span id="rate" hidden></span>
-        <div id="freedom" hidden>
-          <span id="freedom-label"></span>
-          <div class="bar"><span id="freedom-fill"></span></div>
-        </div>
-      </div>
-      <div id="cut-sign" hidden>
-        <span>The Man's cut</span>
-        <strong id="cut">90%</strong>
-      </div>
-    </header>
     <div id="talk" role="status" aria-live="polite" hidden>
       <img id="talk-face" src="assets/face-neutral.png" alt="">
       <p id="talk-text"></p>
@@ -106,19 +92,22 @@
     <p id="hint">Tap the field to graze</p>
     <div id="floats" aria-hidden="true"></div>
   </section>
-  <section id="panel" aria-label="Farm menu" hidden>
-    <nav id="tabs" aria-label="Menu">
-      <button id="tab-main" type="button" class="on">Shop</button>
-      <button id="tab-stats" type="button">Stats</button>
-    </nav>
+  <button id="cta" type="button" hidden><b id="cta-title"></b><small id="cta-note"></small></button>
+  <section id="panel" aria-label="Game menu" hidden>
     <div id="panel-inner">
       <div id="rows"></div>
-      <footer id="foot">
+      <footer id="foot" hidden>
         <span>Fictional money. Not investment advice.</span>
         <button id="reset" type="button">Start over</button>
       </footer>
     </div>
   </section>
+  <nav id="tabs" aria-label="Game sections" hidden>
+    <button id="tab-farm" type="button" class="on">🌾<span>Farm</span></button>
+    <button id="tab-barn" type="button" hidden>🏚️<span>Barn</span></button>
+    <button id="tab-markets" type="button" hidden>📈<span>Markets</span></button>
+    <button id="tab-stats" type="button">📊<span>Stats</span></button>
+  </nav>
   <div id="reader" hidden>
     <article id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-headline">
       <h2 id="masthead">The Daily Bull Run</h2>
@@ -131,6 +120,7 @@
   </div>
 </main>
 <script src="engine.js"></script>
+<script src="charts.js"></script>
 <script src="game.js"></script>
 <!-- page-body-end -->
 </body>

@@ -7,7 +7,7 @@
   const FURROW_PAY = 10;       // what the Man is paid per furrow, in pounds
   const BELLY_PER_BITE = 4;    // 25 bites fills the belly
   const OVERTIME_PAY = 0.2;    // pay rate once the day's quota is met
-  const FREEDOM_NUMBER = 5000000;
+  const FREEDOM_NUMBER = 5000000; // target net worth for tools/simulate.js
   const PAPER_AT = 2500;       // lifetime earnings that bring the newspaper
   const FLIP_WIN_CHANCE = 0.47;
   const SAVE_VERSION = 2;
@@ -62,7 +62,8 @@
       earnedBy: {}, day: 1, phase: "day", quota: 10, dayFurrows: 0, dayEarned: 0,
       dayTook: 0, quotaMet: false, report: null, paperFound: false, doubleUntil: 0,
       clock: 0, taps: 0, beats: [], bearMet: false, lessons: [], flipsLeft: 0,
-      flipsWon: 0, flipsLost: 0, positions: {}, leverage: 1, liquidations: 0,
+      flipsWon: 0, flipsLost: 0, flipNet: 0, positions: {}, leverage: 1, liquidations: 0,
+      assetNet: {}, assetPrice: { index: 100, moo: 100, hay: 100 }, history: [],
       market: { mood: "bull", nights: 4, next: "bull", hint: "bull" },
     };
   }
@@ -237,6 +238,7 @@
     s.flipsLeft -= 1;
     const win = rng() < FLIP_WIN_CHANCE;
     s.money += win ? stake : -stake;
+    s.flipNet += win ? stake : -stake;
     if (win) s.flipsWon += 1; else s.flipsLost += 1;
     return { win, stake };
   }
@@ -265,21 +267,33 @@
     return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * rng());
   }
 
+  // One row of history a day, read by the graphs. Oldest rows drop off at 400.
+  function recordDay(s) {
+    s.history.push({
+      d: s.day, worth: netWorth(s), port: portfolioValue(s), earned: s.dayEarned,
+      took: s.dayTook, flip: s.flipNet, pos: { ...s.assetNet }, px: { ...s.assetPrice },
+    });
+    if (s.history.length > 400) s.history.shift();
+  }
+
   // Settle the market, then start the next day.
   function sleep(s, rng) {
     if (s.phase !== "night") return null;
     const m = s.market;
     const results = [];
     for (const a of ASSETS) {
+      const move = a.drift + MOOD_DRIFT[m.next] * a.beta + a.vol * gaussian(rng);
+      s.assetPrice[a.id] = Math.max(1, s.assetPrice[a.id] * (1 + move));
       const before = s.positions[a.id];
       if (!before) continue;
-      const move = a.drift + MOOD_DRIFT[m.next] * a.beta + a.vol * gaussian(rng);
       const change = Math.max(-1, move * s.leverage);
       const after = before * (1 + change);
       const wiped = after <= 0;
       if (wiped) { delete s.positions[a.id]; s.liquidations += 1; } else s.positions[a.id] = after;
+      s.assetNet[a.id] = (s.assetNet[a.id] || 0) + (after - before);
       results.push({ id: a.id, name: a.name, move, before, after: wiped ? 0 : after, wiped });
     }
+    recordDay(s);
     if (m.next !== m.mood) { m.mood = m.next; m.nights = 3 + Math.floor(rng() * 4); } else m.nights -= 1;
     s.day += 1;
     s.phase = "day";

@@ -8,7 +8,8 @@
   const calm = matchMedia("(prefers-reduced-motion: reduce)").matches;
   const BEAR = "Grizz";
   let s = E.newGame();
-  let tab = "main";
+  let tab = "farm";
+  let chart = "worth";
 
   /* Saving. Storage can be blocked, so the game must still run without it. */
   function save() {
@@ -19,13 +20,18 @@
   }
 
   /* Numbers */
+  function short(n, digits) {
+    return n.toFixed(digits).replace(/\.?0+$/, "");
+  }
   function money(n) {
     const sign = n < 0 ? "-" : "";
     n = Math.abs(n);
-    if (n < 1000) return sign + "£" + n.toFixed(n < 100 ? 2 : 0);
-    if (n < 1e6) return sign + "£" + Math.floor(n).toLocaleString("en-GB");
-    return sign + "£" + (n / 1e6).toFixed(2).replace(/\.?0+$/, "") + "M";
+    if (n < 1000) return sign + "£" + (n < 100 ? n.toFixed(2) : n.toFixed(0));
+    if (n < 1e6) return sign + "£" + short(n / 1e3, n < 1e4 ? 2 : n < 1e5 ? 1 : 0) + "k";
+    if (n < 1e9) return sign + "£" + short(n / 1e6, 2) + "M";
+    return sign + "£" + short(n / 1e9, 2) + "B";
   }
+  const count = (n) => (n < 1000 ? String(n) : n < 1e6 ? short(n / 1e3, 1) + "k" : short(n / 1e6, 2) + "M");
   const perSecond = (n) => money(n) + "/s";
   const percent = (n) => (n >= 0 ? "+" : "") + (n * 100).toFixed(1) + "%";
 
@@ -69,7 +75,6 @@
     { id: "fair", when: () => E.cut(s) <= 0.75, run: () => man("Union activity will be noted on your file.") },
     { id: "wobble", when: () => E.cut(s) <= 0.6, run: () => man("Productivity targets remain unchanged.") },
     { id: "paper", when: () => E.paperIsHere(s), run: sendPaper },
-    { id: "freedom", when: () => E.netWorth(s) >= E.FREEDOM_NUMBER, run: reachFreedom },
   ];
   function runBeats() {
     for (const b of BEATS) {
@@ -97,16 +102,12 @@
     $("paper").hidden = false;
   }
 
-  function reachFreedom() {
-    openPaper("Special edition", "Bull buys the farm", `With ${money(E.netWorth(s))} behind him, a local bull has made the Man an offer he cannot refuse. Sources say the bull is already reviewing the chickens' pay.`, "You reached your freedom number. Prestige comes in a later update.");
-  }
-
   /* The farm */
-  const TUFT = `<svg class="tuft" viewBox="0 0 44 40" aria-hidden="true"><path d="M4 38 C6 24 8 16 12 8 C14 18 16 22 18 26 C18 16 20 8 24 2 C26 14 27 20 29 26 C31 18 34 12 40 8 C37 20 38 30 40 38Z" fill="#3F8F2A" stroke="#1B0F08" stroke-width="3" stroke-linejoin="round"/></svg>`;
+  const TUFT = `<span class="tuft">🌿</span>`;
   function plantTufts() {
     const box = $("tufts");
     for (let i = 0; i < 6; i++) box.insertAdjacentHTML("beforeend", TUFT);
-    [...box.children].forEach((t, i) => { t.style.left = `${3 + i * 5.2}%`; });
+    [...box.children].forEach((t, i) => { t.style.left = `${4 + i * 9}%`; });
   }
   function chomp() {
     const left = [...$("tufts").children].filter((t) => !t.classList.contains("eaten"));
@@ -116,33 +117,19 @@
     setTimeout(() => tuft.classList.remove("eaten"), 900);
   }
 
-  const HELPER_ART = {
-    chicken: `<svg viewBox="0 0 46 46"><path d="M8 28 C8 16 20 12 28 18 L28 10 C30 4 40 6 38 14 L44 16 L38 20 C40 34 28 42 18 40 C12 39 8 34 8 28Z" fill="#fff" stroke="#1B0F08" stroke-width="3" stroke-linejoin="round"/><circle cx="33" cy="12" r="2" fill="#1B0F08"/><path d="M29 6 L32 2 L35 6" fill="#D4321C" stroke="#1B0F08" stroke-width="2"/></svg>`,
-    sheep: `<svg viewBox="0 0 46 46"><path d="M12 38 V44 M32 38 V44" stroke="#1B0F08" stroke-width="4"/><path d="M6 26 C2 16 14 8 22 12 C30 6 44 14 40 26 C44 36 32 42 24 38 C16 42 2 36 6 26Z" fill="#F7F3E8" stroke="#1B0F08" stroke-width="3"/><ellipse cx="9" cy="24" rx="7" ry="9" fill="#2B1D12" stroke="#1B0F08" stroke-width="2"/><circle cx="7" cy="22" r="1.8" fill="#fff"/></svg>`,
-    goat: `<svg viewBox="0 0 46 46"><path d="M14 36 V44 M34 36 V44" stroke="#1B0F08" stroke-width="4"/><path d="M12 16 C20 12 36 14 40 24 C42 34 30 38 20 38 C12 38 10 26 12 16Z" fill="#E8E2D4" stroke="#1B0F08" stroke-width="3" stroke-linejoin="round"/><path d="M14 18 L4 20 L8 30 C12 30 15 26 15 22Z" fill="#E8E2D4" stroke="#1B0F08" stroke-width="3" stroke-linejoin="round"/><path d="M10 15 L16 3 M14 16 L22 5" stroke="#1B0F08" stroke-width="3"/><path d="M6 30 L7 38" stroke="#1B0F08" stroke-width="3"/><circle cx="9" cy="23" r="1.8" fill="#1B0F08"/></svg>`,
-    tractor: `<svg viewBox="0 0 72 58"><path d="M6 22 H34 V8 H56 V36 H6Z" fill="#D4321C" stroke="#1B0F08" stroke-width="3" stroke-linejoin="round"/><path d="M40 13 H51 V24 H40Z" fill="#7FD0F0" stroke="#1B0F08" stroke-width="3"/><circle cx="50" cy="42" r="14" fill="#2B1D12" stroke="#1B0F08" stroke-width="3"/><circle cx="50" cy="42" r="5" fill="#FFC72C"/><circle cx="16" cy="46" r="10" fill="#2B1D12" stroke="#1B0F08" stroke-width="3"/><circle cx="16" cy="46" r="3.5" fill="#FFC72C"/></svg>`,
-  };
-  // Each plot's area on the hillside: left, top, width and height, in %.
-  const PLOTS = {
-    chicken: [3, 26, 24, 14], sheep: [30, 25, 26, 14],
-    goat: [2, 43, 16, 10], tractor: [46, 44, 18, 12],
-  };
-  const SHOWN = { chicken: 6, sheep: 5, goat: 4, tractor: 2 };
+  const EMOJI = { chicken: "🐔", sheep: "🐑", goat: "🐐", tractor: "🚜" };
+  // Up to three show as a row. After that it reads as a count, such as 4🐑.
+  function herd(id) {
+    const n = s.helpers[id] || 0;
+    return n <= 3 ? EMOJI[id].repeat(n) : count(n) + EMOJI[id];
+  }
   function drawHelpers() {
-    let html = "";
     for (const h of E.HELPERS) {
-      const count = s.helpers[h.id] || 0;
-      $(`plot-${h.id}-land`).classList.toggle("open", count > 0);
-      const shown = Math.min(count, SHOWN[h.id]);
-      const [left, top, width, height] = PLOTS[h.id];
-      for (let i = 0; i < shown; i++) {
-        const x = left + ((i * 37) % 100) / 100 * (width - 12);
-        const y = top + ((i * 61) % 100) / 100 * (height - 8);
-        html += `<div class="helper" data-kind="${h.id}" style="left:${x.toFixed(1)}%;top:${y.toFixed(1)}%;animation-delay:-${(i * 0.21).toFixed(2)}s">${HELPER_ART[h.id]}</div>`;
-      }
+      $(`plot-${h.id}-land`).classList.toggle("open", (s.helpers[h.id] || 0) > 0);
+      const el = $("plots").querySelector(`[data-plot="${h.id}"]`);
+      const text = herd(h.id);
+      if (el.textContent !== text) el.innerHTML = text ? `<span style="animation-delay:-${E.HELPERS.indexOf(h) * 0.2}s">${text}</span>` : "";
     }
-    const box = $("helpers");
-    if (box.dataset.html !== html) { box.dataset.html = html; box.innerHTML = html; }
   }
   function buildPlots() {
     for (const id of ["chicken", "sheep", "goat", "tractor"]) {
@@ -182,6 +169,12 @@
     if (!calm) el.animate(frames, { duration: ms, easing: "ease-out" });
   }
   const BULL_X = "translateX(-50%)";
+  let moodTimer = 0;
+  function setMood(mood, ms) {
+    clearTimeout(moodTimer);
+    $("bear").setAttribute("data-mood", mood);
+    if (ms) moodTimer = setTimeout(() => $("bear").setAttribute("data-mood", "neutral"), ms);
+  }
   function chompAnimation() {
     kick($("bull"), [
       { transform: `${BULL_X} rotate(0)` },
@@ -290,7 +283,7 @@
   /* Day and night */
   function goToBarn() {
     if (!E.goToBarn(s, Math.random)) return;
-    tab = "main";
+    tab = "barn";
     hideClover();
     $("reader").hidden = true;
     sayNow("bull", "sad", s.day === 1 ? "So this is where they keep me. Could be worse." : "Quota done. Hooves up.");
@@ -305,7 +298,7 @@
   function sleep() {
     const out = E.sleep(s, Math.random);
     if (!out) return;
-    tab = "main";
+    tab = "farm";
     syncScene();
     render();
     save();
@@ -326,12 +319,35 @@
     render();
     save();
   }
+  let flipping = false;
   function doFlip(share) {
-    const out = E.flip(s, share, Math.random);
-    if (!out) return;
-    sayNow("bear", null, out.win ? `Heads. You won ${money(out.stake)}. Beginner's luck.` : `Tails. You lost ${money(out.stake)}. The bear thanks you.`);
-    render();
-    save();
+    if (flipping) return;
+    flipping = true;
+    setMood("lean");
+    sayNow("bear", null, "Heads or tails, kid. Coin's in the air.");
+    setTimeout(() => {
+      flipping = false;
+      const out = E.flip(s, share, Math.random);
+      if (!out) { setMood("neutral"); return; }
+      if (out.win) {
+        setMood("shock", 1800);
+        flashBarnBull("cheer");
+        sayNow("bear", null, `Heads. You won ${money(out.stake)}. Beginner's luck.`);
+      } else {
+        setMood("gloat", 1800);
+        flashBarnBull("shrug");
+        sayNow("bear", null, `Tails. You lost ${money(out.stake)}. The bear thanks you.`);
+      }
+      render();
+      save();
+    }, 800);
+  }
+  let barnBullTimer = 0;
+  function barnBull() { return s.paperFound ? "read" : "shrug"; }
+  function flashBarnBull(pose) {
+    clearTimeout(barnBullTimer);
+    $("barn-bull").src = `assets/bull-${pose}.png`;
+    barnBullTimer = setTimeout(() => { $("barn-bull").src = `assets/bull-${barnBull()}.png`; }, 1800);
   }
 
   /* The menu is a list of rows, rebuilt only when its structure changes. */
@@ -343,9 +359,6 @@
   }
   function shopRows() {
     const rows = [];
-    if (s.quotaMet) {
-      rows.push({ key: "go", kind: "go", name: "Go to the barn", note: `Quota met. Overtime pays ${Math.round(E.OVERTIME_PAY * 100)}%.`, buy: goToBarn, cost: 0, label: "Clock off" });
-    }
     const r = E.nextRebellion(s);
     if (r && E.canSeeRebellion(s, r) && revealed(r.id, r.cost)) {
       const boost = (1 - r.cut) / (1 - E.cut(s));
@@ -376,20 +389,25 @@
     return rows;
   }
   const MOOD_LINES = {
-    bull: "Tonight's paper: farmers are feeling confident.",
-    bear: "Tonight's paper: nervous mutterings at the market.",
+    bull: "📈 Farmers are feeling confident. Markets look likely to rise.",
+    bear: "📉 Nervous mutterings at the market. Prices look likely to fall.",
   };
+  const tipRow = () => ({ key: "tip", kind: "tip", info: true, name: "🗞️ Tonight's paper", note: `${MOOD_LINES[s.market.hint]} It's right about four times in five.` });
   function barnRows() {
+    if (s.phase === "day") {
+      const r = s.report;
+      const rows = [{ key: "locked", info: true, name: "🔒 Locked until you meet the quota", note: `${count(s.dayFurrows)} of ${count(s.quota)} furrows done today.` }];
+      if (r) rows.push({ key: "last", info: true, name: `Day ${r.day} report`, note: `You kept ${money(r.earned)}. The Man took ${money(r.took)}.` });
+      return rows;
+    }
     const r = s.report;
-    const rows = [{
-      key: "sleep", kind: "go", name: `Sleep until day ${s.day + 1}`, note: `Day ${r.day}: ${r.furrows} furrows. You kept ${money(r.earned)}. The Man took ${money(r.took)}.`,
-      buy: sleep, cost: 0, label: "Sleep",
-    }];
+    const rows = [{ key: "report", info: true, name: `Day ${r.day} report`, note: `${count(r.furrows)} furrows. You kept ${money(r.earned)}. The Man took ${money(r.took)}.` }];
+    if (s.paperFound) rows.push(tipRow());
     const issue = E.ISSUES[s.issues];
     if (s.stage >= 3 && issue) {
       const n = s.issues + 1;
       rows.push({
-        key: "issue" + n, kind: "news", name: `Read issue ${n} of ${E.ISSUES.length}`, note: "The headline stays secret until you buy it.", gain: `All pay × ${issue.bonus}`, cost: issue.cost,
+        key: "issue" + n, kind: "news", name: `📰 Read issue ${n} of ${E.ISSUES.length}`, note: "The headline stays secret until you buy it.", gain: `All pay × ${issue.bonus}`, cost: issue.cost,
         buy: () => {
           if (!E.readIssue(s)) return;
           openPaper(`Issue ${s.issues} of ${E.ISSUES.length}`, issue.headline, issue.body, `Lesson learned: all pay × ${issue.bonus}`);
@@ -402,81 +420,117 @@
     }
     if (s.stage < 3) rows.push({ key: "empty", info: true, name: "Nothing to do but sleep", note: "The barn feels bigger than this. Keep earning." });
     if (!s.bearMet) return rows;
-    rows.push({ key: "h-flip", heading: `${BEAR}'s coin` });
     rows.push({
-      key: "flip", kind: "bear", info: true, name: "Double or nothing", note: `${s.flipsLeft} flip${s.flipsLeft === 1 ? "" : "s"} left tonight. ${Math.round(E.FLIP_WIN_CHANCE * 100)}% to win.`,
-      actions: [[0.1, "10%"], [0.5, "50%"], [1, "All of it"]].map(([share, label]) => ({ label: `Bet ${label}`, off: s.flipsLeft < 1 || s.money <= 0, run: () => doFlip(share) })),
+      key: "flip", kind: "bear", info: true, name: "🪙 Grizz's coin", note: `${s.flipsLeft} flip${s.flipsLeft === 1 ? "" : "s"} left tonight. ${Math.round(E.FLIP_WIN_CHANCE * 100)}% to win double.`,
+      actions: [[0.1, "10%"], [0.5, "50%"], [1, "All"]].map(([share, label]) => ({ label: `Bet ${label}`, off: s.flipsLeft < 1 || s.money <= 0 || flipping, run: () => doFlip(share) })),
     });
-    const open = E.ASSETS.filter((a) => E.assetUnlocked(s, a.id));
-    if (open.length) {
-      rows.push({ key: "h-market", heading: `Market: ${MOOD_LINES[s.market.hint]}` });
-      const levels = E.leverageOptions(s);
-      if (levels.length > 1) {
-        rows.push({
-          key: "lev", kind: "bear", info: true, name: "Leverage", note: "Multiplies your gains and your losses. A big enough drop wipes out the position.",
-          actions: levels.map((x) => ({ label: `${x}×`, on: s.leverage === x, run: () => E.setLeverage(s, x) })),
-        });
-      }
-      for (const a of open) {
-        const held = s.positions[a.id] || 0;
-        rows.push({
-          key: "asset-" + a.id, kind: "bear", info: true, name: a.name, note: `${a.note} Held: ${money(held)}`,
-          actions: [
-            { label: "Buy 25%", off: s.money <= 0, run: () => E.invest(s, a.id, 0.25) },
-            { label: "Buy all", off: s.money <= 0, run: () => E.invest(s, a.id, 1) },
-            { label: "Sell", off: !held, run: () => E.sell(s, a.id) },
-          ],
-        });
-      }
-    }
     const lesson = E.nextLesson(s);
     if (lesson) {
-      rows.push({ key: "h-lesson", heading: `${BEAR}'s next lesson` });
       rows.push({
-        key: "lesson-" + lesson.id, kind: "bear", name: lesson.name, note: lesson.note, cost: lesson.cost,
-        buy: () => { if (E.buyLesson(s)) sayNow("bear", null, lesson.line); },
+        key: "lesson-" + lesson.id, kind: "bear", name: `🐻 ${lesson.name}`, note: lesson.note, cost: lesson.cost,
+        buy: () => { if (E.buyLesson(s)) { setMood("smug", 2200); sayNow("bear", null, lesson.line); syncScene(); } },
       });
     }
     return rows;
   }
-  function statRows() {
-    const income = E.incomePerSecond(s);
-    const earned = Object.values(s.earnedBy).reduce((a, b) => a + b, 0) || 1;
-    const rows = [{ key: "h-income", heading: "Where your money comes from" }];
-    const source = (key, name, count, rate) => {
-      const total = s.earnedBy[key] || 0;
-      rows.push({ key: "stat-" + key, stat: true, name, count, value: rate, sub: `${money(total)} earned so far`, share: total / earned });
-    };
-    source("bull", "You, tapping", null, `${money(E.tapWork(s) * E.payPerWork(s))} a tap`);
-    for (const h of E.HELPERS) {
-      if (s.helpers[h.id] || s.earnedBy[h.id]) source(h.id, h.name, s.helpers[h.id] || 0, perSecond(E.helperIncome(s, h)));
+  const ASSET_COLOURS = { index: "#3F8CEB", moo: "#BA861A", hay: "#E8528C" };
+  function marketRows() {
+    const night = s.phase === "night";
+    const rows = [night ? tipRow() : { key: "closed", info: true, name: "🌙 Trading opens at night", note: "Prices update while you sleep." }];
+    const open = E.ASSETS.filter((a) => E.assetUnlocked(s, a.id));
+    if (!open.length) rows.push({ key: "none", info: true, name: "Nothing to trade yet", note: "Buy lessons from Grizz in the barn." });
+    const levels = E.leverageOptions(s);
+    if (levels.length > 1) {
+      rows.push({
+        key: "lev", kind: "bear", info: true, name: "Leverage", note: "Multiplies gains and losses. A big enough drop wipes out a position.",
+        actions: levels.map((x) => ({ label: `${x}×`, on: s.leverage === x, cls: s.leverage === x ? "" : "off", off: !night, run: () => E.setLeverage(s, x) })),
+      });
     }
-    if (s.earnedBy.clover) source("clover", "Lucky clovers", null, "");
+    for (const a of open) {
+      const held = s.positions[a.id] || 0;
+      const net = s.assetNet[a.id] || 0;
+      rows.push({
+        key: "asset-" + a.id, info: true, name: `${a.name}`, note: `${a.note} Price ${s.assetPrice[a.id].toFixed(1)}.`,
+        gain: held || net ? `Held ${money(held)}. Total return ${net >= 0 ? "+" : ""}${money(net)}` : "",
+        actions: [
+          { label: "Buy 25%", off: !night || s.money <= 0, run: () => E.invest(s, a.id, 0.25) },
+          { label: "Buy all", off: !night || s.money <= 0, run: () => E.invest(s, a.id, 1) },
+          { label: "Sell", off: !night || !held, run: () => E.sell(s, a.id) },
+        ],
+      });
+    }
+    if (open.length) {
+      rows.push({ key: "h-px", heading: "Prices over time" });
+      rows.push({ key: "chart-px", chart: "prices" });
+    }
+    return rows;
+  }
+  function chartOptions(id) {
+    const h = s.history;
+    const days = h.map((d) => d.d);
+    const open = E.ASSETS.filter((a) => E.assetUnlocked(s, a.id) || h.some((d) => d.pos[a.id]));
+    const one = (name, values, extra) => ({ days, format: money, series: [{ name, color: "#49D17D", values }], ...extra });
+    if (id === "income") return one("You kept", h.map((d) => d.earned));
+    if (id === "flips") return one("Flip returns", h.map((d) => d.flip), { zero: true });
+    if (id === "portfolio") return one("Portfolio value", h.map((d) => d.port));
+    if (id === "positions") {
+      return { days, format: money, zero: true, series: open.map((a) => ({ name: a.name, color: ASSET_COLOURS[a.id], values: h.map((d) => d.pos[a.id] || 0) })) };
+    }
+    if (id === "prices") {
+      return { days, format: (v) => v.toFixed(0), series: open.map((a) => ({ name: a.name, color: ASSET_COLOURS[a.id], values: h.map((d) => d.px[a.id]) })) };
+    }
+    return one("Net worth", h.map((d) => d.worth));
+  }
+  function statRows() {
+    const earned = Object.values(s.earnedBy).reduce((a, b) => a + b, 0) || 1;
+    const picks = [["worth", "Worth"], ["income", "Income"]];
+    if (s.bearMet) picks.push(["flips", "Flips"]);
+    if (s.lessons.includes("index")) picks.push(["positions", "Positions"], ["portfolio", "Portfolio"]);
+    if (!picks.some(([id]) => id === chart)) chart = "worth";
+    const rows = [
+      { key: "chart-picks", kind: "picks", info: true, actions: picks.map(([id, label]) => ({ label, on: chart === id, cls: chart === id ? "" : "off", run: () => { chart = id; } })) },
+      { key: "chart-stats-" + chart, chart },
+      { key: "h-income", heading: "Where your money comes from" },
+    ];
+    const source = (key, name, n, rate) => {
+      const total = s.earnedBy[key] || 0;
+      rows.push({ key: "stat-" + key, stat: true, name, count: n, value: rate, sub: `${money(total)} earned so far`, share: total / earned });
+    };
+    source("bull", "🐂 You, tapping", null, `${money(E.tapWork(s) * E.payPerWork(s))} a tap`);
+    for (const h of E.HELPERS) {
+      if (s.helpers[h.id] || s.earnedBy[h.id]) source(h.id, `${EMOJI[h.id]} ${h.name}`, s.helpers[h.id] || 0, perSecond(E.helperIncome(s, h)));
+    }
+    if (s.earnedBy.clover) source("clover", "🍀 Lucky clovers", null, "");
     rows.push({ key: "h-pay", heading: "How your pay is worked out" });
     rows.push({ key: "stat-gross", stat: true, name: "Base pay", value: "£10 a furrow" });
-    rows.push({ key: "stat-cut", stat: true, name: "The Man's cut", value: `-${Math.round(E.cut(s) * 100)}%` });
-    if (s.issues) rows.push({ key: "stat-news", stat: true, name: "Newspaper lessons", value: `× ${E.issueBonus(s)}` });
+    rows.push({ key: "stat-cut", stat: true, name: "👨‍🌾 The Man's cut", value: `-${Math.round(E.cut(s) * 100)}%` });
+    if (s.issues) rows.push({ key: "stat-news", stat: true, name: "📰 Newspaper lessons", value: `× ${E.issueBonus(s)}` });
     if (s.quotaMet && s.phase === "day") rows.push({ key: "stat-ot", stat: true, name: "Overtime", value: `× ${E.OVERTIME_PAY}` });
     rows.push({ key: "h-life", heading: "Your career" });
     rows.push({ key: "stat-day", stat: true, name: "Days worked", value: String(s.day) });
-    rows.push({ key: "stat-furrows", stat: true, name: "Furrows ploughed", value: s.furrows.toLocaleString("en-GB") });
-    rows.push({ key: "stat-rate", stat: true, name: "Helpers earn", value: perSecond(income) });
+    rows.push({ key: "stat-furrows", stat: true, name: "Furrows ploughed", value: count(s.furrows) });
     rows.push({ key: "stat-man", stat: true, name: "The Man has taken", value: money(s.manTook) });
-    rows.push({ key: "stat-worth", stat: true, name: "Your net worth", value: money(E.netWorth(s)) });
+    rows.push({ key: "stat-worth", stat: true, name: "Net worth", value: money(E.netWorth(s)) });
     if (s.bearMet) {
       rows.push({ key: "stat-flips", stat: true, name: "Coin flips won and lost", value: `${s.flipsWon} and ${s.flipsLost}` });
+      rows.push({ key: "stat-flipnet", stat: true, name: "Coin flip returns", value: money(s.flipNet) });
       rows.push({ key: "stat-portfolio", stat: true, name: "Invested", value: money(E.portfolioValue(s)) });
       rows.push({ key: "stat-wiped", stat: true, name: "Positions wiped out", value: String(s.liquidations) });
     }
     return rows;
   }
-  const currentRows = () => (tab === "stats" ? statRows() : s.phase === "night" ? barnRows() : shopRows());
+  const currentRows = () => ({ farm: shopRows, barn: barnRows, markets: marketRows, stats: statRows })[tab]();
 
   function makeRow(row) {
     if (row.heading) {
       const h = document.createElement("h3");
       h.className = "heading";
       return h;
+    }
+    if (row.chart) {
+      const el = document.createElement("div");
+      el.className = "chart";
+      return el;
     }
     if (row.stat) {
       const el = document.createElement("div");
@@ -518,6 +572,14 @@
   }
   function fillRow(el, row) {
     if (row.heading) { el.textContent = row.heading; return; }
+    if (row.chart) {
+      const stamp = row.chart + ":" + s.history.length;
+      if (el.dataset.stamp !== stamp) {
+        el.dataset.stamp = stamp;
+        BullCharts.draw(el, chartOptions(row.chart));
+      }
+      return;
+    }
     if (row.stat) {
       el.querySelector("b").textContent = row.name + (row.count === null || row.count === undefined ? "" : ` × ${row.count}`);
       el.querySelector("span").textContent = row.value;
@@ -541,6 +603,7 @@
         b.textContent = a.label;
         b.disabled = !!a.off;
         b.classList.toggle("on", !!a.on);
+        b.classList.toggle("off", a.cls === "off");
       });
     }
   }
@@ -559,10 +622,12 @@
   }
   function setTab(next) {
     tab = next;
-    $("tab-main").classList.toggle("on", tab === "main");
-    $("tab-stats").classList.toggle("on", tab === "stats");
     $("panel-inner").scrollTop = 0;
     render();
+  }
+
+  function onCta() {
+    if (s.phase === "night") sleep(); else goToBarn();
   }
 
   function syncScene() {
@@ -574,15 +639,16 @@
     app.classList.toggle("stage-3", s.stage === 3);
     app.classList.toggle("has-panel", s.stage >= 2);
     $("panel").hidden = s.stage < 2;
-    $("purse").hidden = s.stage < 2;
-    $("cut-sign").hidden = s.stage < 2;
-    $("quota").hidden = s.stage < 2 || night;
+    $("tabs").hidden = s.stage < 2;
+    $("status-top").hidden = s.stage < 2;
     $("barn").hidden = !night;
     $("bear").toggleAttribute("hidden", !night || !s.bearMet); // SVGs have no .hidden property
     $("door").hidden = !night || s.bearMet || s.issues < 1;
-    $("barn-bull").src = s.paperFound ? "assets/bull-read.png" : "assets/bull-shrug.png";
+    $("barn-bull").src = `assets/bull-${barnBull()}.png`;
     $("scene").setAttribute("aria-label", night ? "Inside the barn at night." : "The field. Tap to work.");
-    $("tab-main").textContent = night ? "Barn" : "Shop";
+    $("tab-barn").hidden = !(s.report || night);
+    $("tab-markets").hidden = !s.bearMet;
+    $("foot").hidden = false;
   }
 
   function mix(a, b, t) {
@@ -595,30 +661,60 @@
     const t = Math.max(0, (p - 0.65) / 0.35);
     const [r, g, b] = mix(SKY_DAY, SKY_DUSK, t);
     $("scene").style.backgroundColor = `rgb(${r},${g},${b})`;
-    $("sun").style.left = `${10 + p * 62}%`;
-    $("sun").style.top = `${24 - Math.sin(p * Math.PI) * 16 + t * 18}%`;
+    $("sun").style.left = `${8 + p * 84}%`;
+    $("sun").style.top = `${22 - Math.sin(p * Math.PI) * 16 + t * 12}%`;
+  }
+
+  function renderStatus() {
+    const night = s.phase === "night";
+    const rate = E.incomePerSecond(s);
+    if (s.stage === 1) {
+      $("activity-text").textContent = "🌿 Grazing";
+      $("activity-side").textContent = `Belly ${s.belly}%`;
+      $("activity-fill").style.width = s.belly + "%";
+      return;
+    }
+    $("money").textContent = money(s.money);
+    $("money").classList.toggle("doubled", s.clock < s.doubleUntil);
+    $("cut").textContent = Math.round(E.cut(s) * 100) + "%";
+    const quota = `${count(s.dayFurrows)} of ${count(s.quota)} furrows`;
+    if (night) {
+      $("activity-text").textContent = `🌙 Night ${s.day}: in the barn`;
+      $("activity-side").textContent = s.bearMet ? `${s.flipsLeft} flip${s.flipsLeft === 1 ? "" : "s"} left` : "";
+      $("activity-fill").style.width = "100%";
+    } else {
+      $("activity-text").textContent = s.quotaMet ? `🌇 Day ${s.day}: overtime, ${quota}` : `☀️ Day ${s.day}: ${quota}`;
+      $("activity-side").textContent = rate > 0 ? perSecond(rate) : "";
+      $("activity-fill").style.width = E.dayProgress(s) * 100 + "%";
+    }
+    const history = s.history.map((d) => d.worth);
+    $("worth").hidden = history.length < 2;
+    if (history.length >= 2) {
+      $("worth-text").textContent = `Worth ${money(E.netWorth(s))}`;
+      const lo = Math.min(...history);
+      const hi = Math.max(...history);
+      const span = hi - lo || 1;
+      const d = history.map((v, i) => `${i ? "L" : "M"}${(1 + (i / (history.length - 1)) * 78).toFixed(1)} ${(22 - ((v - lo) / span) * 20).toFixed(1)}`).join("");
+      $("spark").querySelector("path").setAttribute("d", d);
+    }
+  }
+
+  function renderCta() {
+    const night = s.phase === "night";
+    const show = s.stage >= 2 && (night || s.quotaMet);
+    $("cta").hidden = !show;
+    if (!show) return;
+    $("cta-title").textContent = night ? `😴 Sleep until day ${s.day + 1}` : "🏚️ Clock off and go to the barn";
+    $("cta-note").textContent = night ? "Trades settle while you sleep." : `Quota met. Overtime only pays ${Math.round(E.OVERTIME_PAY * 100)}%.`;
   }
 
   function render() {
-    $("belly-fill").style.width = s.belly + "%";
-    $("belly").setAttribute("aria-valuenow", String(s.belly));
     renderDay();
     $("app").classList.toggle("quota-met", s.quotaMet && s.phase === "day");
+    renderStatus();
+    renderCta();
     if (s.stage < 2) return;
-    $("money").textContent = money(s.money);
-    $("money").classList.toggle("doubled", s.clock < s.doubleUntil);
-    const rate = E.incomePerSecond(s);
-    $("rate").hidden = false;
-    $("rate").textContent = s.phase === "night" ? `Night ${s.day}` : rate > 0 ? `${perSecond(rate)}, day ${s.day}` : `Day ${s.day}`;
-    $("cut").textContent = Math.round(E.cut(s) * 100) + "%";
-    $("quota-fill").style.width = E.dayProgress(s) * 100 + "%";
-    $("quota-label").textContent = s.quotaMet ? `Quota met: ${s.dayFurrows} of ${s.quota} furrows` : `Today's quota: ${s.dayFurrows} of ${s.quota} furrows`;
-    $("freedom").hidden = s.stage < 3;
-    if (s.stage >= 3) {
-      const worth = E.netWorth(s);
-      $("freedom-label").textContent = `Freedom: ${money(worth)} of ${money(E.FREEDOM_NUMBER)}`;
-      $("freedom-fill").style.width = Math.min(100, (worth / E.FREEDOM_NUMBER) * 100) + "%";
-    }
+    for (const id of ["farm", "barn", "markets", "stats"]) $("tab-" + id).classList.toggle("on", tab === id);
     renderRows();
   }
 
@@ -644,7 +740,6 @@
       }
       if (s.quotaMet && !wasMet) {
         sayNow("bull", "sad", "I can't feel my hooves.");
-        man("Quota met. Barn access granted. Overtime available.");
         render();
         save();
       }
@@ -657,7 +752,7 @@
       $("ground").style.backgroundPositionX = `${groundX.toFixed(1)}px`;
       if (pending >= 0.01 && now - pendingAt > 1100) {
         const box = $("scene");
-        floatText(box.clientWidth * 0.1, box.clientHeight * 0.55, "+" + money(pending));
+        floatText(box.clientWidth * 0.62, box.clientHeight * 0.6, "+" + money(pending));
         pending = 0;
         pendingAt = now;
       }
@@ -676,6 +771,7 @@
     plantTufts();
     buildPlots();
     if (s.taps > 0) $("hint").hidden = true;
+    if (s.phase === "night") tab = "barn";
     if (E.paperIsHere(s) && s.beats.includes("paper")) $("paper").hidden = false;
     syncScene();
     drawHelpers();
@@ -684,8 +780,8 @@
     $("clover").addEventListener("click", onClover);
     $("paper").addEventListener("click", onPaper);
     $("door").addEventListener("click", openDoor);
-    $("tab-main").addEventListener("click", () => setTab("main"));
-    $("tab-stats").addEventListener("click", () => setTab("stats"));
+    for (const id of ["farm", "barn", "markets", "stats"]) $("tab-" + id).addEventListener("click", () => setTab(id));
+    $("cta").addEventListener("click", onCta);
     $("sheet-close").addEventListener("click", () => { $("reader").hidden = true; });
     let armed = false;
     $("reset").addEventListener("click", (e) => {

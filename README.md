@@ -13,6 +13,8 @@ the bear who teaches coin flips, investing and leverage. All money is fictional.
 - `style.css`: the look
 - `engine.js`: rules and numbers, with no page code
 - `game.js`: drawing, tapping, story and saving
+- `charts.js`: the line graphs
+- `ROADMAP.md`: agreed ideas and what comes next
 - `assets/`: sprites cut from the character sheet
 - `tools/`: scripts for cutting sprites, checking pacing and testing
 
