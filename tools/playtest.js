@@ -1,3 +1,5 @@
+/* Plays through in a phone-sized browser, saving screenshots to a folder.
+   Usage: node tools/playtest.js output-folder */
 const { chromium } = require('playwright');
 const http = require('http'), fs = require('fs'), path = require('path');
 const root = process.cwd(), shots = process.argv[2];
@@ -11,35 +13,46 @@ const server = http.createServer((q, r) => {
   const p = await b.newPage({ viewport: { width: 390, height: 780 }, hasTouch: true });
   const errors = [];
   p.on('pageerror', e => errors.push(e.message));
-  p.on('console', m => m.type() === 'error' && !/fonts/.test(m.text()) && errors.push(m.text()));
+  p.on('console', m => m.type() === 'error' && !/fonts|ERR_TUNNEL/.test(m.text() + m.location().url) && errors.push(m.text()));
   await p.goto('http://localhost:8123/');
   await p.waitForTimeout(300);
-  await p.screenshot({ path: `${shots}/1-start.png` });
-  const tap = async (n) => { for (let i = 0; i < n; i++) await p.mouse.click(120, 300); };
-  await tap(14); await p.waitForTimeout(100);
-  await p.screenshot({ path: `${shots}/2-graze.png` });
-  await tap(11); await p.waitForTimeout(1500);
-  await p.screenshot({ path: `${shots}/3-man.png` });
-  await p.waitForTimeout(1600);
-  await tap(30); await p.waitForTimeout(200);
-  await p.screenshot({ path: `${shots}/4-plough.png` });
-  const buyAll = async () => { for (const btn of await p.$$('#shop .item:not(:disabled)')) { await btn.click({ timeout: 500 }).catch(() => {}); } };
-  for (let i = 0; i < 60; i++) { await tap(5); await buyAll(); }
-  await p.screenshot({ path: `${shots}/5-shop.png` });
-  // Reload to prove the save restores, with enough money to reach the paper.
-  await p.waitForTimeout(5200);
-  const before = await p.textContent('#money');
-  await p.evaluate(() => { const s = JSON.parse(localStorage.getItem('bull-run-escape')); s.money = 5000; s.lifetime = 5000; s.helpers.goat = 2; s.rebellions = ['raise','union','strike']; localStorage.setItem('bull-run-escape', JSON.stringify(s)); Storage.prototype.setItem = () => {}; });
-  await p.reload();
-  await p.waitForSelector('#paper:not([hidden])', { timeout: 4000 });
-  await p.waitForTimeout(4200);
-  await p.screenshot({ path: `${shots}/6-paper-arrives.png` });
-  await p.click('#paper', { force: true });
-  await p.waitForTimeout(450);
-  await p.screenshot({ path: `${shots}/7-paper.png` });
-  await p.click('#sheet-close');
+  const tap = async (n) => { for (let i = 0; i < n; i++) await p.mouse.click(200, 330); };
+  await tap(25); await p.waitForTimeout(3200);
+  await p.waitForSelector('#purse:not([hidden])');
+  for (let i = 0; i < 60; i++) {
+    await tap(4);
+    for (const btn of await p.$$('#rows button.item:not(:disabled):not(.go)')) await btn.click({ timeout: 300 }).catch(() => {});
+  }
+  await p.screenshot({ path: `${shots}/a-day.png` });
+  await p.click('#tab-stats'); await p.waitForTimeout(150);
+  await p.screenshot({ path: `${shots}/b-stats.png` });
+  await p.click('#tab-main'); await p.waitForTimeout(150);
+  await p.locator('.item.go').click({ timeout: 2000 }).catch(async () => { await tap(60); await p.locator('.item.go').click(); });
+  await p.waitForTimeout(300);
+  await p.screenshot({ path: `${shots}/c-barn.png` });
+  await p.locator('.item.go').click(); await p.waitForTimeout(200);
+  const day2 = await p.textContent('#rate');
+  // Jump ahead to the bear with a doctored save.
+  await p.evaluate(() => {
+    const s = JSON.parse(localStorage.getItem('bull-run-escape') || 'null');
+    Object.assign(s, { stage: 3, paperFound: true, phase: 'night', issues: 1, money: 130000, lifetime: 150000, day: 19,
+      report: { day: 18, furrows: 90, earned: 21000, took: 26000 }, flipsLeft: 1,
+      helpers: { chicken: 14, sheep: 8, goat: 6, tractor: 3 }, rebellions: ['raise', 'union', 'strike', 'lawyer'], lessons: ['flip2', 'index', 'moo', 'lev2'] });
+    s.beats.push('paper'); localStorage.setItem('bull-run-escape', JSON.stringify(s)); Storage.prototype.setItem = () => {};
+  });
+  await p.reload(); await p.waitForTimeout(400);
+  await p.screenshot({ path: `${shots}/d-door.png` });
+  await p.click('#door'); await p.waitForTimeout(700);
+  await p.getByRole('button', { name: 'Bet 10%' }).click(); await p.waitForTimeout(200);
+  await p.getByRole('button', { name: 'Buy 25%' }).first().click();
+  await p.getByRole('button', { name: 'Buy 25%' }).nth(1).click();
+  await p.getByRole('button', { name: '2×' }).click();
   await p.waitForTimeout(200);
-  await p.screenshot({ path: `${shots}/8-stage3.png` });
-  console.log({ before, overflowX: await p.evaluate(() => document.documentElement.scrollWidth > innerWidth), errors });
+  await p.screenshot({ path: `${shots}/e-bear.png` });
+  await p.locator('.item.go').click(); await p.waitForTimeout(500);
+  await p.screenshot({ path: `${shots}/f-morning.png` });
+  await p.click('#sheet-close'); await p.waitForTimeout(250);
+  await p.screenshot({ path: `${shots}/g-day19.png` });
+  console.log({ day2, overflowX: await p.evaluate(() => document.documentElement.scrollWidth > innerWidth), errors });
   await b.close(); server.close();
 })().catch(e => { console.error(e); server.close(); process.exit(1); });

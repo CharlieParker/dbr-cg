@@ -4,7 +4,8 @@ An incremental browser game starring the Daily Bull Run mascot. A bull grazes,
 gets put to work by the Man, fights for a bigger share of his pay, then finds a
 newspaper that shows him a way out.
 
-This build covers grazing, ploughing and the newspaper. Investing comes next.
+This build covers grazing, ploughing, quota days, the barn, the newspaper, and
+the bear who teaches coin flips, investing and leverage. All money is fictional.
 
 ## Files
 
