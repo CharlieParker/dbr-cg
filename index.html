@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<!-- page-head-start -->
+<title>Bull Run Escape</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Old+Standard+TT:wght@400;700&family=Patrick+Hand&family=UnifrakturCook:wght@700&display=swap">
+<link rel="stylesheet" href="style.css">
+<!-- page-head-end -->
+</head>
+<body>
+<!-- page-body-start -->
+<main id="app" class="stage-1">
+  <section id="scene" aria-label="The field. Tap to work.">
+    <svg class="backdrop" viewBox="0 0 400 300" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
+      <circle cx="326" cy="52" r="26" fill="#FFD94A" stroke="#1B0F08" stroke-width="4"/>
+      <path d="M-10 214 C70 150 150 158 226 198 C290 160 350 166 420 206 V300 H-10Z" fill="#A7D65C" stroke="#1B0F08" stroke-width="4"/>
+      <g stroke="#1B0F08" stroke-width="4" stroke-linejoin="round">
+        <path d="M250 200 V150 L276 128 L302 150 V200Z" fill="#D4321C"/>
+        <path d="M264 200 V170 H288 V200Z" fill="#F7F3E8"/>
+        <path d="M264 170 L288 200 M288 170 L264 200" fill="none"/>
+      </g>
+      <g stroke="#1B0F08" stroke-width="4" fill="#F7F3E8">
+        <rect x="-8" y="196" width="130" height="8"/><rect x="-8" y="214" width="130" height="8"/>
+        <rect x="14" y="186" width="10" height="50"/><rect x="62" y="186" width="10" height="50"/><rect x="110" y="186" width="10" height="50"/>
+      </g>
+    </svg>
+    <div id="ground"></div>
+    <div id="tufts" aria-hidden="true"></div>
+    <div id="helpers" aria-hidden="true"></div>
+    <svg id="plough" viewBox="0 0 120 70" aria-hidden="true">
+      <path d="M0 22 H42" stroke="#1B0F08" stroke-width="5" fill="none"/>
+      <path d="M38 12 L100 12 L112 4" stroke="#1B0F08" stroke-width="10" fill="none" stroke-linecap="round"/>
+      <path d="M38 12 L100 12 L112 4" stroke="#B9783F" stroke-width="5" fill="none" stroke-linecap="round"/>
+      <path d="M58 14 L50 56 L84 62 L74 14Z" fill="#9AA6AE" stroke="#1B0F08" stroke-width="4" stroke-linejoin="round"/>
+    </svg>
+    <img id="bull" src="assets/bull-side.png" alt="The bull" draggable="false">
+    <svg id="man" viewBox="0 0 200 760" aria-hidden="true">
+      <g stroke="#1B0F08" stroke-width="7" stroke-linejoin="round">
+        <path d="M108 0 H182 V560 H108Z" fill="#23497F"/>
+        <path d="M18 0 H94 V560 H18Z" fill="#2F5C9E"/>
+        <path d="M112 540 H184 V720 H74 C74 690 92 680 112 670Z" fill="#214D2C"/>
+        <path d="M22 540 H96 V740 H-14 C-14 700 2 690 22 680Z" fill="#2F6B3E"/>
+        <path d="M-14 740 H96 V756 H-14Z" fill="#1B0F08"/>
+        <path d="M74 720 H184 V736 H74Z" fill="#1B0F08"/>
+      </g>
+    </svg>
+    <button id="clover" type="button" hidden aria-label="Pick the lucky clover">
+      <svg viewBox="0 0 60 60" aria-hidden="true"><g fill="#FFC72C" stroke="#1B0F08" stroke-width="4"><circle cx="30" cy="16" r="12"/><circle cx="16" cy="30" r="12"/><circle cx="44" cy="30" r="12"/><circle cx="30" cy="42" r="12"/></g><circle cx="30" cy="29" r="5" fill="#FFF3B0"/></svg>
+    </button>
+    <button id="paper" type="button" hidden aria-label="Pick up the newspaper">
+      <svg viewBox="0 0 80 60" aria-hidden="true"><path d="M6 8 L70 3 L74 50 L10 56Z" fill="#F7F3E8" stroke="#1B0F08" stroke-width="4" stroke-linejoin="round"/><path d="M16 15 L62 12 M18 26 L38 25 M18 34 L38 33 M19 42 L39 41 M46 24 L64 23 L65 42 L47 43Z" stroke="#1B0F08" stroke-width="3" fill="none"/></svg>
+    </button>
+    <header id="hud">
+      <div id="belly-wrap">
+        <span id="belly-label">Belly</span>
+        <div id="belly" role="progressbar" aria-label="Belly" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span id="belly-fill"></span></div>
+      </div>
+      <div id="purse" hidden>
+        <strong id="money">£0.00</strong>
+        <span id="rate" hidden></span>
+        <div id="freedom" hidden>
+          <span id="freedom-label"></span>
+          <div class="bar"><span id="freedom-fill"></span></div>
+        </div>
+      </div>
+      <div id="cut-sign" hidden>
+        <span>The Man's cut</span>
+        <strong id="cut">90%</strong>
+      </div>
+    </header>
+    <div id="talk" role="status" aria-live="polite" hidden>
+      <img id="talk-face" src="assets/face-neutral.png" alt="">
+      <p id="talk-text"></p>
+    </div>
+    <p id="hint">Tap the field to graze</p>
+    <div id="floats" aria-hidden="true"></div>
+  </section>
+  <section id="panel" aria-label="Upgrades" hidden>
+    <div id="panel-inner">
+      <div id="ending" hidden></div>
+      <div id="shop"></div>
+      <footer id="foot">
+        <span>Fictional money. Not investment advice.</span>
+        <button id="reset" type="button">Start over</button>
+      </footer>
+    </div>
+  </section>
+  <div id="reader" hidden>
+    <article id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-headline">
+      <h2 id="masthead">The Daily Bull Run</h2>
+      <p id="sheet-issue"></p>
+      <h3 id="sheet-headline"></h3>
+      <p id="sheet-body"></p>
+      <p id="sheet-bonus"></p>
+      <button id="sheet-close" type="button">Back to the field</button>
+    </article>
+  </div>
+</main>
+<script src="engine.js"></script>
+<script src="game.js"></script>
+<!-- page-body-end -->
+</body>
+</html>
